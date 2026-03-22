@@ -12,7 +12,7 @@ export function ProbabilityCalculator({ card, totalDeckSize, allCards = [] }: Pr
   const [handSize, setHandSize] = useState(7);
   const [desiredCount, setDesiredCount] = useState(1);
   const [searchCards, setSearchCards] = useState<string[]>([]);
-  const maxDesiredCount = Math.min(card.count, 4);
+  const [searchDesiredCount, setSearchDesiredCount] = useState(1);
 
   const probability = useMemo(() => {
     return calculateProbability(totalDeckSize, card.count, handSize, desiredCount);
@@ -23,14 +23,14 @@ export function ProbabilityCalculator({ card, totalDeckSize, allCards = [] }: Pr
       const searchCard = allCards.find((c) => c.name === searchCardName);
       if (!searchCard) return null;
 
-      const searchProb = calculateProbability(totalDeckSize, searchCard.count, handSize, 1);
+      const searchProb = calculateProbability(totalDeckSize, searchCard.count, handSize, searchDesiredCount);
       return {
         name: searchCardName,
         count: searchCard.count,
         probability: searchProb,
       };
     }).filter((p) => p !== null);
-  }, [searchCards, allCards, handSize, totalDeckSize]);
+  }, [searchCards, allCards, handSize, totalDeckSize, searchDesiredCount]);
 
   const combinedSearchProbability = useMemo(() => {
     if (searchCards.length === 0) return 0;
@@ -102,28 +102,15 @@ export function ProbabilityCalculator({ card, totalDeckSize, allCards = [] }: Pr
           <label htmlFor="desired-count">
             Minimum Copies Wanted: {desiredCount} {desiredCount === 1 ? 'copy' : 'copies'}
           </label>
-          <div className="desired-count-control">
-            <input
-              id="desired-count"
-              type="number"
-              min="1"
-              max={maxDesiredCount}
-              step="1"
-              value={desiredCount}
-              onChange={(e) => {
-                const value = parseInt(e.target.value, 10);
-                if (Number.isNaN(value)) return;
-                setDesiredCount(Math.max(1, Math.min(maxDesiredCount, value)));
-              }}
-              onWheel={(e) => {
-                e.preventDefault();
-                const nextValue = e.deltaY < 0 ? desiredCount + 1 : desiredCount - 1;
-                setDesiredCount(Math.max(1, Math.min(maxDesiredCount, nextValue)));
-              }}
-              className="desired-count-input"
-            />
-            <span className="desired-count-hint">Use scroll wheel or arrows</span>
-          </div>
+          <input
+            id="desired-count"
+            type="range"
+            min="1"
+            max={Math.min(card.count, 4)}
+            value={desiredCount}
+            onChange={(e) => setDesiredCount(parseInt(e.target.value))}
+            className="slider"
+          />
         </div>
       </div>
 
@@ -179,6 +166,21 @@ export function ProbabilityCalculator({ card, totalDeckSize, allCards = [] }: Pr
 
           {searchCards.length > 0 && (
             <>
+              <div className="control-group search-control-group">
+                <label htmlFor="search-desired-count">
+                  Search Card Minimum Copies Wanted: {searchDesiredCount} {searchDesiredCount === 1 ? 'copy' : 'copies'}
+                </label>
+                <input
+                  id="search-desired-count"
+                  type="range"
+                  min="1"
+                  max="4"
+                  value={searchDesiredCount}
+                  onChange={(e) => setSearchDesiredCount(parseInt(e.target.value))}
+                  className="slider"
+                />
+              </div>
+
               <div className={`combined-search-prob ${getColorClass(combinedSearchProbability)}`}>
                 <div className="combined-label">Combined chance to draw {card.name} or search it:</div>
                 <div className="combined-value">{combinedSearchProbability.toFixed(2)}%</div>
@@ -218,7 +220,9 @@ export function ProbabilityCalculator({ card, totalDeckSize, allCards = [] }: Pr
                       </button>
                     </div>
                     <div className="search-card-prob">
-                      <span className="label">Chance to draw in opening hand:</span>
+                      <span className="label">
+                        Chance to draw at least {searchDesiredCount} {searchDesiredCount === 1 ? 'copy' : 'copies'} in opening hand:
+                      </span>
                       <span className={`value ${getColorClass(result!.probability)}`}>{result!.probability.toFixed(2)}%</span>
                     </div>
                   </div>

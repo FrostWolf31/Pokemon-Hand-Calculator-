@@ -114,31 +114,8 @@
   font-weight: 500;
 }
 
-.desired-count-control {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.desired-count-input {
-  width: 90px;
-  padding: 0.5rem 0.6rem;
-  background: #1a1a1a;
-  border: 1px solid #444;
-  border-radius: 6px;
-  color: #fff;
-  font-size: 1rem;
-}
-
-.desired-count-input:focus {
-  outline: none;
-  border-color: #646cff;
-  box-shadow: 0 0 0 2px rgba(100, 108, 255, 0.1);
-}
-
-.desired-count-hint {
-  color: #aaa;
-  font-size: 0.85rem;
+.search-control-group {
+  margin-bottom: 1rem;
 }
 
 .slider {
@@ -669,17 +646,6 @@
 
   .search-cards h4 {
     font-size: 0.95rem;
-  }
-
-  .desired-count-control {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-
-  .desired-count-input {
-    width: 100%;
-    max-width: 140px;
   }
 
   .search-card {
