@@ -44,9 +44,9 @@ export function ProbabilityCalculator({ card, totalDeckSize, allCards = [] }: Pr
     // Add the base card count to the search cards
     const totalCards = card.count + totalSearchCards;
 
-    // Calculate probability of drawing at least 1 card that gets you the Pokémon
-    return calculateProbability(totalDeckSize, totalCards, handSize, 1);
-  }, [searchCards, allCards, card.count, handSize, totalDeckSize]);
+    // Calculate probability of drawing at least the selected minimum count.
+    return calculateProbability(totalDeckSize, totalCards, handSize, searchDesiredCount);
+  }, [searchCards, allCards, card.count, handSize, totalDeckSize, searchDesiredCount]);
 
   const handleAddSearchCard = (cardName: string) => {
     if (!searchCards.includes(cardName)) {
@@ -182,7 +182,9 @@ export function ProbabilityCalculator({ card, totalDeckSize, allCards = [] }: Pr
               </div>
 
               <div className={`combined-search-prob ${getColorClass(combinedSearchProbability)}`}>
-                <div className="combined-label">Combined chance to draw {card.name} or search it:</div>
+                <div className="combined-label">
+                  Combined chance to draw at least {searchDesiredCount} {searchDesiredCount === 1 ? 'copy' : 'copies'} of {card.name} or search it:
+                </div>
                 <div className="combined-value">{combinedSearchProbability.toFixed(2)}%</div>
                 <div className="combined-info">
                   {card.count} {card.name} + {searchCards.reduce((sum, cardName) => {
