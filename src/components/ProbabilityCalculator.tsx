@@ -12,6 +12,7 @@ export function ProbabilityCalculator({ card, totalDeckSize, allCards = [] }: Pr
   const [handSize, setHandSize] = useState(7);
   const [desiredCount, setDesiredCount] = useState(1);
   const [searchCards, setSearchCards] = useState<string[]>([]);
+  const maxDesiredCount = Math.min(card.count, 4);
 
   const probability = useMemo(() => {
     return calculateProbability(totalDeckSize, card.count, handSize, desiredCount);
@@ -57,6 +58,10 @@ export function ProbabilityCalculator({ card, totalDeckSize, allCards = [] }: Pr
     setSearchCards(searchCards.filter((c) => c !== cardName));
   };
 
+  const handleClearSearchCards = () => {
+    setSearchCards([]);
+  };
+
   const getColorClass = (prob: number) => {
     if (prob >= 90) return 'excellent';
     if (prob >= 70) return 'good';
@@ -97,15 +102,28 @@ export function ProbabilityCalculator({ card, totalDeckSize, allCards = [] }: Pr
           <label htmlFor="desired-count">
             Minimum Copies Wanted: {desiredCount} {desiredCount === 1 ? 'copy' : 'copies'}
           </label>
-          <input
-            id="desired-count"
-            type="range"
-            min="1"
-            max={Math.min(card.count, 4)}
-            value={desiredCount}
-            onChange={(e) => setDesiredCount(parseInt(e.target.value))}
-            className="slider"
-          />
+          <div className="desired-count-control">
+            <input
+              id="desired-count"
+              type="number"
+              min="1"
+              max={maxDesiredCount}
+              step="1"
+              value={desiredCount}
+              onChange={(e) => {
+                const value = parseInt(e.target.value, 10);
+                if (Number.isNaN(value)) return;
+                setDesiredCount(Math.max(1, Math.min(maxDesiredCount, value)));
+              }}
+              onWheel={(e) => {
+                e.preventDefault();
+                const nextValue = e.deltaY < 0 ? desiredCount + 1 : desiredCount - 1;
+                setDesiredCount(Math.max(1, Math.min(maxDesiredCount, nextValue)));
+              }}
+              className="desired-count-input"
+            />
+            <span className="desired-count-hint">Use scroll wheel or arrows</span>
+          </div>
         </div>
       </div>
 
@@ -176,7 +194,15 @@ export function ProbabilityCalculator({ card, totalDeckSize, allCards = [] }: Pr
               </div>
 
               <div className="search-cards">
-                <h4>Individual Search Cards:</h4>
+                <div className="search-cards-header">
+                  <h4>Individual Search Cards:</h4>
+                  <button
+                    onClick={handleClearSearchCards}
+                    className="btn-clear-search"
+                  >
+                    Clear
+                  </button>
+                </div>
                 {searchCardProbabilities.map((result) => (
                   <div key={result!.name} className={`search-card ${getColorClass(result!.probability)}`}>
                     <div className="search-card-header">
