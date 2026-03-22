@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react';
 import { Card, calculateProbability } from '../utils';
-import { findSearchCards, isItemSearchCard } from '../api';
 import './ProbabilityCalculator.css';
 
 interface ProbabilityCalculatorProps {
@@ -14,16 +13,12 @@ export function ProbabilityCalculator({ card, totalDeckSize, allCards = [] }: Pr
   const [desiredCount, setDesiredCount] = useState(1);
   const [searchCards, setSearchCards] = useState<string[]>([]);
 
-  const validSearchCards = useMemo(() => {
-    return searchCards.filter((name) => isItemSearchCard(name));
-  }, [searchCards]);
-
   const probability = useMemo(() => {
     return calculateProbability(totalDeckSize, card.count, handSize, desiredCount);
   }, [totalDeckSize, card.count, handSize, desiredCount]);
 
   const searchCardProbabilities = useMemo(() => {
-    return validSearchCards.map((searchCardName) => {
+    return searchCards.map((searchCardName) => {
       const searchCard = allCards.find((c) => c.name === searchCardName);
       if (!searchCard) return null;
 
@@ -34,13 +29,13 @@ export function ProbabilityCalculator({ card, totalDeckSize, allCards = [] }: Pr
         probability: searchProb,
       };
     }).filter((p) => p !== null);
-  }, [validSearchCards, allCards, handSize, totalDeckSize]);
+  }, [searchCards, allCards, handSize, totalDeckSize]);
 
   const combinedSearchProbability = useMemo(() => {
-    if (validSearchCards.length === 0) return 0;
+    if (searchCards.length === 0) return 0;
 
     // Calculate total count of all search cards
-    const totalSearchCards = validSearchCards.reduce((sum, cardName) => {
+    const totalSearchCards = searchCards.reduce((sum, cardName) => {
       const card = allCards.find((c) => c.name === cardName);
       return sum + (card ? card.count : 0);
     }, 0);
@@ -50,11 +45,9 @@ export function ProbabilityCalculator({ card, totalDeckSize, allCards = [] }: Pr
 
     // Calculate probability of drawing at least 1 card that gets you the Pokémon
     return calculateProbability(totalDeckSize, totalCards, handSize, 1);
-  }, [validSearchCards, allCards, card.count, handSize, totalDeckSize]);
+  }, [searchCards, allCards, card.count, handSize, totalDeckSize]);
 
   const handleAddSearchCard = (cardName: string) => {
-    if (!isItemSearchCard(cardName)) return;
-
     if (!searchCards.includes(cardName)) {
       setSearchCards([...searchCards, cardName]);
     }
@@ -62,16 +55,6 @@ export function ProbabilityCalculator({ card, totalDeckSize, allCards = [] }: Pr
 
   const handleRemoveSearchCard = (cardName: string) => {
     setSearchCards(searchCards.filter((c) => c !== cardName));
-  };
-
-  const handleAutoFetchSearchCards = async () => {
-    try {
-      const foundCards = await findSearchCards(card.name, allCards);
-      const cardNames = foundCards.map((c) => c.name);
-      setSearchCards(cardNames);
-    } catch (error) {
-      console.error('Error finding search cards:', error);
-    }
   };
 
   const getColorClass = (prob: number) => {
@@ -149,16 +132,9 @@ export function ProbabilityCalculator({ card, totalDeckSize, allCards = [] }: Pr
         <div className="search-section">
           <div className="search-header">
             <h3>Cards That Search for {card.name}:</h3>
-            <button
-              onClick={handleAutoFetchSearchCards}
-              className="btn btn-auto-fetch"
-              title="Automatically find cards in your deck that can search for this Pokémon"
-            >
-              🔍 Auto-Find
-            </button>
           </div>
           <p className="search-help">
-            Click cards from your deck that can search for this Pokémon, or use <strong>Auto-Find</strong> to automatically detect them.
+            Click cards from your deck that can search for this Pokémon.
             <br />
             <strong>Examples:</strong> Nest Ball (searches for Pokémon), Ultra Ball, Level Ball, etc.
             <br />
@@ -169,7 +145,7 @@ export function ProbabilityCalculator({ card, totalDeckSize, allCards = [] }: Pr
             <h4>Available Search Cards:</h4>
             <div className="search-card-buttons">
               {allCards
-                .filter((c) => c.name !== card.name && !searchCards.includes(c.name) && isItemSearchCard(c.name))
+                .filter((c) => c.name !== card.name && !searchCards.includes(c.name))
                 .map((availableCard) => (
                   <button
                     key={availableCard.name}
@@ -183,16 +159,16 @@ export function ProbabilityCalculator({ card, totalDeckSize, allCards = [] }: Pr
             </div>
           </div>
 
-          {validSearchCards.length > 0 && (
+          {searchCards.length > 0 && (
             <>
               <div className={`combined-search-prob ${getColorClass(combinedSearchProbability)}`}>
                 <div className="combined-label">Combined chance to draw {card.name} or search it:</div>
                 <div className="combined-value">{combinedSearchProbability.toFixed(2)}%</div>
                 <div className="combined-info">
-                  {card.count} {card.name} + {validSearchCards.reduce((sum, cardName) => {
+                  {card.count} {card.name} + {searchCards.reduce((sum, cardName) => {
                     const c = allCards.find((c) => c.name === cardName);
                     return sum + (c ? c.count : 0);
-                  }, 0)} search cards = {card.count + validSearchCards.reduce((sum, cardName) => {
+                  }, 0)} search cards = {card.count + searchCards.reduce((sum, cardName) => {
                     const c = allCards.find((c) => c.name === cardName);
                     return sum + (c ? c.count : 0);
                   }, 0)} total cards
