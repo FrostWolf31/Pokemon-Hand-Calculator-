@@ -4,7 +4,7 @@
  */
 
 // Predefined list of cards that can search for Pokémon
-const SEARCH_CARD_KEYWORDS = [
+const ITEM_SEARCH_KEYWORDS = [
   'nest ball',
   'ultra ball',
   'level ball',
@@ -31,19 +31,17 @@ const SEARCH_CARD_KEYWORDS = [
   'safari ball',
   'masterball',
   'pokéball',
-  'pokemon center lady',
   'mysterious treasure',
   'evolution incense',
-  'switched',
   'dual ball',
 ];
 
 /**
  * Check if a card name indicates it can search for Pokémon
  */
-function isSearchCard(cardName: string): boolean {
+export function isItemSearchCard(cardName: string): boolean {
   const lowercaseName = cardName.toLowerCase();
-  return SEARCH_CARD_KEYWORDS.some((keyword) =>
+  return ITEM_SEARCH_KEYWORDS.some((keyword) =>
     lowercaseName.includes(keyword)
   );
 }
@@ -67,8 +65,8 @@ export async function findSearchCards(
       continue;
     }
 
-    // Check if this card can search based on its name
-    if (isSearchCard(deckCard.name)) {
+    // Item-only check for cards that can search based on card name
+    if (isItemSearchCard(deckCard.name)) {
       const key = deckCard.name.toLowerCase();
       const existing = searchCardMap.get(key);
 

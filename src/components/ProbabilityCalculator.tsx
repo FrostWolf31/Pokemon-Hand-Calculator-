@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Card, calculateProbability } from '../utils';
-import { findSearchCards } from '../api';
+import { findSearchCards, isItemSearchCard } from '../api';
 import './ProbabilityCalculator.css';
 
 interface ProbabilityCalculatorProps {
@@ -13,14 +13,17 @@ export function ProbabilityCalculator({ card, totalDeckSize, allCards = [] }: Pr
   const [handSize, setHandSize] = useState(7);
   const [desiredCount, setDesiredCount] = useState(1);
   const [searchCards, setSearchCards] = useState<string[]>([]);
-  const [searchInput, setSearchInput] = useState('');
+
+  const validSearchCards = useMemo(() => {
+    return searchCards.filter((name) => isItemSearchCard(name));
+  }, [searchCards]);
 
   const probability = useMemo(() => {
     return calculateProbability(totalDeckSize, card.count, handSize, desiredCount);
   }, [totalDeckSize, card.count, handSize, desiredCount]);
 
   const searchCardProbabilities = useMemo(() => {
-    return searchCards.map((searchCardName) => {
+    return validSearchCards.map((searchCardName) => {
       const searchCard = allCards.find((c) => c.name === searchCardName);
       if (!searchCard) return null;
 
@@ -31,13 +34,13 @@ export function ProbabilityCalculator({ card, totalDeckSize, allCards = [] }: Pr
         probability: searchProb,
       };
     }).filter((p) => p !== null);
-  }, [searchCards, allCards, handSize, totalDeckSize]);
+  }, [validSearchCards, allCards, handSize, totalDeckSize]);
 
   const combinedSearchProbability = useMemo(() => {
-    if (searchCards.length === 0) return 0;
+    if (validSearchCards.length === 0) return 0;
 
     // Calculate total count of all search cards
-    const totalSearchCards = searchCards.reduce((sum, cardName) => {
+    const totalSearchCards = validSearchCards.reduce((sum, cardName) => {
       const card = allCards.find((c) => c.name === cardName);
       return sum + (card ? card.count : 0);
     }, 0);
@@ -47,12 +50,13 @@ export function ProbabilityCalculator({ card, totalDeckSize, allCards = [] }: Pr
 
     // Calculate probability of drawing at least 1 card that gets you the Pokémon
     return calculateProbability(totalDeckSize, totalCards, handSize, 1);
-  }, [searchCards, allCards, card.count, handSize, totalDeckSize]);
+  }, [validSearchCards, allCards, card.count, handSize, totalDeckSize]);
 
-  const handleAddSearchCard = () => {
-    if (searchInput.trim() && !searchCards.includes(searchInput.trim())) {
-      setSearchCards([...searchCards, searchInput.trim()]);
-      setSearchInput('');
+  const handleAddSearchCard = (cardName: string) => {
+    if (!isItemSearchCard(cardName)) return;
+
+    if (!searchCards.includes(cardName)) {
+      setSearchCards([...searchCards, cardName]);
     }
   };
 
@@ -165,12 +169,11 @@ export function ProbabilityCalculator({ card, totalDeckSize, allCards = [] }: Pr
             <h4>Available Search Cards:</h4>
             <div className="search-card-buttons">
               {allCards
-                .filter((c) => c.name !== card.name && !searchCards.includes(c.name))
+                .filter((c) => c.name !== card.name && !searchCards.includes(c.name) && isItemSearchCard(c.name))
                 .map((availableCard) => (
                   <button
                     key={availableCard.name}
-                    onClick={() => handleAddSearchCard()}
-                    onMouseDown={() => setSearchInput(availableCard.name)}
+                    onClick={() => handleAddSearchCard(availableCard.name)}
                     className="search-card-btn"
                   >
                     <span className="card-name-btn">{availableCard.name}</span>
@@ -180,16 +183,16 @@ export function ProbabilityCalculator({ card, totalDeckSize, allCards = [] }: Pr
             </div>
           </div>
 
-          {searchCards.length > 0 && (
+          {validSearchCards.length > 0 && (
             <>
               <div className={`combined-search-prob ${getColorClass(combinedSearchProbability)}`}>
                 <div className="combined-label">Combined chance to draw {card.name} or search it:</div>
                 <div className="combined-value">{combinedSearchProbability.toFixed(2)}%</div>
                 <div className="combined-info">
-                  {card.count} {card.name} + {searchCards.reduce((sum, cardName) => {
+                  {card.count} {card.name} + {validSearchCards.reduce((sum, cardName) => {
                     const c = allCards.find((c) => c.name === cardName);
                     return sum + (c ? c.count : 0);
-                  }, 0)} search cards = {card.count + searchCards.reduce((sum, cardName) => {
+                  }, 0)} search cards = {card.count + validSearchCards.reduce((sum, cardName) => {
                     const c = allCards.find((c) => c.name === cardName);
                     return sum + (c ? c.count : 0);
                   }, 0)} total cards
