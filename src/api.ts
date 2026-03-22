@@ -31,8 +31,6 @@ const SEARCH_CARD_KEYWORDS = [
   'safari ball',
   'masterball',
   'pokéball',
-  'carmine',
-  'ciphermaniac',
   'pokemon center lady',
   'mysterious treasure',
   'evolution incense',
@@ -58,7 +56,7 @@ export async function findSearchCards(
   pokemonName: string,
   deckCards: Array<{ name: string; count: number }>
 ): Promise<Array<{ name: string; count: number }>> {
-  const searchCards: Array<{ name: string; count: number }> = [];
+  const searchCardMap = new Map<string, { name: string; count: number }>();
 
   // Only check cards that are in the user's deck
   for (const deckCard of deckCards) {
@@ -71,12 +69,19 @@ export async function findSearchCards(
 
     // Check if this card can search based on its name
     if (isSearchCard(deckCard.name)) {
-      searchCards.push({
-        name: deckCard.name,
-        count: deckCard.count,
-      });
+      const key = deckCard.name.toLowerCase();
+      const existing = searchCardMap.get(key);
+
+      if (existing) {
+        existing.count += deckCard.count;
+      } else {
+        searchCardMap.set(key, {
+          name: deckCard.name,
+          count: deckCard.count,
+        });
+      }
     }
   }
 
-  return searchCards;
+  return Array.from(searchCardMap.values());
 }

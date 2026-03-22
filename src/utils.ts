@@ -84,7 +84,7 @@ export function parseDeckList(input: string): DeckList {
     .map((line) => line.trim())
     .filter((line) => line.length > 0);
 
-  const cards: Card[] = [];
+  const cardMap = new Map<string, Card>();
   let totalCards = 0;
 
   for (const line of lines) {
@@ -102,10 +102,19 @@ export function parseDeckList(input: string): DeckList {
 
     // Add any card with valid count and name
     if (count > 0 && name.length > 0) {
-      cards.push({ name, count });
+      const key = name.toLowerCase();
+      const existing = cardMap.get(key);
+
+      if (existing) {
+        existing.count += count;
+      } else {
+        cardMap.set(key, { name, count });
+      }
+
       totalCards += count;
     }
   }
 
+  const cards = Array.from(cardMap.values());
   return { cards, totalCards };
 }
