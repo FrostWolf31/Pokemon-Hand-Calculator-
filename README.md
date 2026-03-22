@@ -22,5 +22,9 @@ The calculator uses the hypergeometric distribution to calculate exact probabili
 3. **Click on any card** in the deck list to view its opening hand probability
 4. **Adjust the hand size** and **desired copy count** using the sliders to see different scenarios
 
+## Deployment
+
+Hosted on GitHub Pages via GitHub Actions.
+
 
 
