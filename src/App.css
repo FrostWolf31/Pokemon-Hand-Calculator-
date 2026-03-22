@@ -1,0 +1,101 @@
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  background: linear-gradient(135deg, #646cff 0%, #535bf2 100%);
+  padding: 2rem;
+  text-align: center;
+  color: white;
+}
+
+.app-header h1 {
+  margin: 0 0 0.5rem 0;
+  font-size: 2.5rem;
+}
+
+.app-header p {
+  margin: 0;
+  opacity: 0.9;
+  font-size: 1.1rem;
+}
+
+.app-main {
+  flex: 1;
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.btn-reset {
+  margin-bottom: 1.5rem;
+  padding: 0.75rem 1.5rem;
+  background: #444;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-reset:hover {
+  background: #555;
+  transform: translateX(-2px);
+}
+
+.app-footer {
+  background: #1a1a1a;
+  padding: 2rem;
+  text-align: center;
+  border-top: 1px solid #333;
+  color: #666;
+  margin-top: auto;
+}
+
+.app-footer p {
+  margin: 0.5rem 0;
+}
+
+@media (max-width: 768px) {
+  .app-header {
+    padding: 1.5rem 1rem;
+  }
+
+  .app-header h1 {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .app-header p {
+    font-size: 0.9rem;
+  }
+
+  .app-main {
+    padding: 0.75rem;
+  }
+
+  .btn-reset {
+    margin-bottom: 1rem;
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-header h1 {
+    font-size: 1.2rem;
+  }
+
+  .app-header {
+    padding: 1rem 0.75rem;
+  }
+
+  .app-main {
+    padding: 0.5rem;
+  }
+}
